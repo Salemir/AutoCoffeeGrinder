@@ -6,8 +6,8 @@ int ledState3 = 4;
 int relaisPin = 12;
 int changeStateBtn = 10;
 int startMillBtn = 9;
-int lowerTimeBtn = A1;
-int raiseTimeBtn = A2;
+int lowerTimeBtn = 8;
+int raiseTimeBtn = 7;
 
 int stateBtn = 0;
 int duration = 100;
@@ -64,8 +64,8 @@ void setupPins() {
 
   digitalWrite(changeStateBtn, LOW);
   digitalWrite(startMillBtn, LOW);
-  analogWrite(lowerTimeBtn, LOW);
-  analogWrite(raiseTimeBtn, LOW);
+  digitalWrite(lowerTimeBtn, LOW);
+  digitalWrite(raiseTimeBtn, LOW);
 }
 
 
@@ -221,10 +221,6 @@ void loop() {
           isMilling = false;
       }
       
-
-      
-      delay(500);
-      
     } else if (isMilling == true) {
       Serial.println("Milling already in progress...");
       delay(200);
@@ -242,18 +238,25 @@ void loop() {
         case 2: stateBtn = 0; break;
       }
       Serial.print("Machine mode changed. Is now: ");
+      delay(200);
       Serial.println((int)stateBtn);
     }
 
     // switch modes if button was pressed
-    int lowerTimeRead = analogRead(lowerTimeBtn);  
-    if(lowerTimeRead > 250) { lowerTime((int)stateBtn); }
+    int lowerTimeRead = digitalRead(lowerTimeBtn);  
+    if(lowerTimeRead == HIGH) {
+      lowerTime((int)stateBtn);
+      delay(250);
+    }
 
-    int raiseTimeRead = analogRead(raiseTimeBtn);  
-    if(raiseTimeRead > 250) { raiseTime((int)stateBtn); }
+    int raiseTimeRead = digitalRead(raiseTimeBtn);  
+    if(raiseTimeRead == HIGH) {
+      raiseTime((int)stateBtn);
+      delay(250);
+    }
     
     updateState();
-    delay(200);
+    delay(75);
   }
   
 }
