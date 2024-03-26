@@ -1,17 +1,8 @@
 #include <EEPROM.h>
 
-// needed for display
-#include <SPI.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
-#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
 int ledState1 = 2;
 int ledState2 = 3;
+int ledState3 = 4;
 int relaisPin = 12;
 int changeStateBtn = 10;
 int startMillBtn = 9;
@@ -20,14 +11,6 @@ int raiseTimeBtn = A2;
 
 int stateBtn = 0;
 bool isMilling = false;
-
-// https://www.mischianti.org/2021/07/14/ssd1306-oled-display-draw-images-splash-and-animations-2/#1_Select_image
-// 'cup', 16x16px
-const unsigned char cup [] PROGMEM = {
-  0x0d, 0xa0, 0x09, 0x60, 0x05, 0xb0, 0x06, 0x90, 0x04, 0x20, 0x00, 0x00, 0x1f, 0xfe, 0x3f, 0xff, 
-  0x20, 0x0d, 0x20, 0x0f, 0x20, 0x0e, 0x30, 0x08, 0x10, 0x08, 0x08, 0x10, 0x07, 0xe0, 0xff, 0xff
-};
-
 
 int timeState1 = 0;
 int timeState2 = 0;
@@ -89,12 +72,15 @@ void updateLED() {
   if(stateBtn == 0) {
     digitalWrite(ledState1, LOW);
     digitalWrite(ledState2, HIGH);
+    digitalWrite(ledState3, LOW);
   } else if (stateBtn == 1) {
-    digitalWrite(ledState1, HIGH);
-    digitalWrite(ledState2, LOW);
-  } else if (stateBtn == 2) {
-    digitalWrite(ledState1, HIGH);
+    digitalWrite(ledState1, LOW);
     digitalWrite(ledState2, HIGH);
+    digitalWrite(ledState3, HIGH);
+  } else if (stateBtn == 2) {
+    digitalWrite(ledState1, LOW);
+    digitalWrite(ledState2, LOW);
+    digitalWrite(ledState3, HIGH);
   }
 }
 
