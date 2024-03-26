@@ -1,3 +1,7 @@
+Ideengeber: https://www.flomei.de/blog/2021/01/07/kaffeemuehle-automatisieren/
+Code Ideengeber: https://gitlab.com/www-flomei-de/coffeegrinder/-/blob/master/code/CoffeeGrinder/CoffeeGrinder.ino?ref_type=heads
+
+
 Teileliste:
 - Arduino: https://www.roboter-bausatz.de/p/nano-mega328p-v3.0-usb-ch340g-board
 - Relais: https://www.roboter-bausatz.de/p/1-kanal-relais-5v-230v
