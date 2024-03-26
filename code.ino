@@ -10,6 +10,7 @@ int lowerTimeBtn = A1;
 int raiseTimeBtn = A2;
 
 int stateBtn = 0;
+int duration = 100;
 bool isMilling = false;
 
 int timeState1 = 0;
@@ -170,7 +171,6 @@ void loop() {
       Serial.println((int)stateBtn);
       
       unsigned long start = millis();
-      int duration = 250;
       if(stateBtn == 1) {
         duration = timeState1;
       }
@@ -178,29 +178,40 @@ void loop() {
         duration = timeState2;
       }
 
-      Serial.print("Duration is: ");
-      Serial.println((int)duration);
+      if(stateBtn == 1 || stateBtn ==2) {
+        Serial.print("Duration is: ");
+        Serial.println((int)duration);
 
-      Serial.println("Starting milling...");
-      int elapse = 0;
-      // run for a specified time, keep the motor running
-      while(millis() < start + duration) {
-        digitalWrite(relaisPin, HIGH);
-        isMilling = true;
+        Serial.println("Starting milling...");
+        int elapse = 0;
+        // run for a specified time, keep the motor running
+        while(millis() < start + duration) {
+          digitalWrite(relaisPin, HIGH);
+          isMilling = true;
         
-        // show countdown in automatic mode
-        if(stateBtn > 0) {            
-            if (stateBtn == 1) {
+          // show countdown in automatic mode
+          if(stateBtn > 0) {            
+              if (stateBtn == 1) {
                 elapse = (timeState1 - (millis()-start));
                 Serial.println(elapse);
-            }
-            else if (stateBtn == 2) {
+              }
+              else if (stateBtn == 2) {
                 elapse = (timeState2 - (millis()-start));
                 Serial.println(elapse);
-            }
+              }
         }
 
       }
+      }
+      else if(stateBtn == 0) {
+        while (startRead == 1) {
+          digitalWrite(relaisPin, HIGH);
+          isMilling = true;
+          startRead = digitalRead(startMillBtn);
+        }
+
+      }
+      
 
       // time is over, reset machine
       Serial.println("Milling done. Stopping.");
