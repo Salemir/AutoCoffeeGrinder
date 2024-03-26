@@ -171,8 +171,12 @@ void loop() {
       
       unsigned long start = millis();
       int duration = 250;
-      if(stateBtn == 1) { duration = timeState1; }
-      else if(stateBtn == 2) { duration = timeState2; }
+      if(stateBtn == 1) {
+        duration = timeState1;
+      }
+      else if(stateBtn == 2) {
+        duration = timeState2;
+      }
 
       Serial.print("Duration is: ");
       Serial.println((int)duration);
@@ -185,7 +189,17 @@ void loop() {
         isMilling = true;
         
         // show countdown in automatic mode
-       
+        if(stateBtn > 0) {            
+            if (stateBtn == 1) {
+                elapse = (timeState1 - (millis()-start));
+                Serial.println(elapse);
+            }
+            else if (stateBtn == 2) {
+                elapse = (timeState2 - (millis()-start));
+                Serial.println(elapse);
+            }
+        }
+
       }
 
       // time is over, reset machine
