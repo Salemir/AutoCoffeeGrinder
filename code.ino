@@ -199,9 +199,15 @@ void loop() {
                 elapse = (timeState2 - (millis()-start));
                 Serial.println(elapse);
               }
+          }
+         
         }
+        // time is over, reset machine automatic mode
+        Serial.println("Milling done. Stopping.");
+        digitalWrite(relaisPin, LOW);
+        isMilling = false;
+        delay(1000);
 
-      }
       }
       else if(stateBtn == 0) {
         while (startRead == 1) {
@@ -209,14 +215,14 @@ void loop() {
           isMilling = true;
           startRead = digitalRead(startMillBtn);
         }
-
+        // time is over, reset machine manual mode
+          Serial.println("Milling done. Stopping.");
+          digitalWrite(relaisPin, LOW);
+          isMilling = false;
       }
       
 
-      // time is over, reset machine
-      Serial.println("Milling done. Stopping.");
-      digitalWrite(relaisPin, LOW);
-      isMilling = false;
+      
       delay(500);
       
     } else if (isMilling == true) {
