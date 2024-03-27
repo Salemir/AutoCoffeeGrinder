@@ -5,6 +5,8 @@ Code Ideengeber: https://gitlab.com/www-flomei-de/coffeegrinder/-/blob/master/co
 
 HowTo folgt
 
+In Arduino IDE 2 Nano mit "Old Bootloader" wählen (Tools -> Prozessor -> ATMega328p (old Bootloader)
+
 Teileliste:
 - Arduino: https://www.roboter-bausatz.de/p/nano-mega328p-v3.0-usb-ch340g-board
 - Relais: https://www.roboter-bausatz.de/p/1-kanal-relais-5v-230v
