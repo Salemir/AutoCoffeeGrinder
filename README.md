@@ -1,4 +1,4 @@
-Projekt auf https://wokwi.com/projects/393455588363009025
+Projekt auf https://wokwi.com/projects/393582405413928961
 
 Ideengeber: https://www.flomei.de/blog/2021/01/07/kaffeemuehle-automatisieren/
 Code Ideengeber: https://gitlab.com/www-flomei-de/coffeegrinder/-/blob/master/code/CoffeeGrinder/CoffeeGrinder.ino?ref_type=heads
