@@ -1,13 +1,12 @@
 #include <EEPROM.h>
 
 int ledState1 = 2;
-int ledState2 = 3;
-int ledState3 = 4;
+int ledState2 = 4;
 int relaisPin = 12;
 int changeStateBtn = 10;
 int startMillBtn = 9;
 int lowerTimeBtn = 8;
-int raiseTimeBtn = 7;
+int raiseTimeBtn = 6;
 
 int stateBtn = 0;
 int duration = 100;
@@ -28,8 +27,8 @@ void setup() {
   timeState2 = (readIntFromEEPROM(2) * 20);
 
   // if there's a problem with the EEPROM, fall back to somewhat plausible values
-  if(timeState1 < 0) { timeState1 = 3600; }
-  if(timeState2 < 0) { timeState2 = 7200; }
+  if(timeState1 < 0) { timeState1 = 4000; }
+  if(timeState2 < 0) { timeState2 = 8000; }
 
   // update LEDs + display to reflect current state
   updateState();
@@ -72,16 +71,13 @@ void setupPins() {
 void updateLED() {
   if(stateBtn == 0) {
     digitalWrite(ledState1, LOW);
-    digitalWrite(ledState2, HIGH);
-    digitalWrite(ledState3, LOW);
-  } else if (stateBtn == 1) {
-    digitalWrite(ledState1, LOW);
-    digitalWrite(ledState2, HIGH);
-    digitalWrite(ledState3, HIGH);
-  } else if (stateBtn == 2) {
-    digitalWrite(ledState1, LOW);
     digitalWrite(ledState2, LOW);
-    digitalWrite(ledState3, HIGH);
+  } else if (stateBtn == 1) {
+    digitalWrite(ledState1, HIGH);
+    digitalWrite(ledState2, LOW);
+  } else if (stateBtn == 2) {
+    digitalWrite(ledState1, HIGH);
+    digitalWrite(ledState2, HIGH);
   }
 }
 
