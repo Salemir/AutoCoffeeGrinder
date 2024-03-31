@@ -210,6 +210,7 @@ void loop() {
         while (startRead == 1) {
           digitalWrite(relaisPin, LOW);
           isMilling = true;
+          delay(5);
           startRead = digitalRead(startMillBtn);
         }
         // time is over, reset machine manual mode
@@ -251,7 +252,6 @@ void loop() {
       raiseTime((int)stateBtn);
       delay(250);
     }
-    
     updateState();
     delay(75);
   }
