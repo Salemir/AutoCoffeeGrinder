@@ -61,7 +61,7 @@ void setupPins() {
   pinMode(lowerTimeBtn, INPUT);
   pinMode(raiseTimeBtn, INPUT);
 
-  digitalWrite(relaisPin, HIGH);
+  digitalWrite(relaisPin, LOW);
   digitalWrite(changeStateBtn, LOW);
   digitalWrite(startMillBtn, LOW);
   digitalWrite(lowerTimeBtn, LOW);
@@ -183,7 +183,7 @@ void loop() {
         int elapse = 0;
         // run for a specified time, keep the motor running
         while(millis() < start + duration) {
-          digitalWrite(relaisPin, LOW);
+          digitalWrite(relaisPin, HIGH);
           isMilling = true;
         
           // show countdown in automatic mode
@@ -201,21 +201,21 @@ void loop() {
         }
         // time is over, reset machine automatic mode
         Serial.println("Milling done. Stopping.");
-        digitalWrite(relaisPin, HIGH);
+        digitalWrite(relaisPin, LOW);
         isMilling = false;
         delay(1000);
 
       }
       else if(stateBtn == 0) {
         while (startRead == 1) {
-          digitalWrite(relaisPin, LOW);
+          digitalWrite(relaisPin, HIGH);
           isMilling = true;
           delay(5);
           startRead = digitalRead(startMillBtn);
         }
         // time is over, reset machine manual mode
           Serial.println("Milling done. Stopping.");
-          digitalWrite(relaisPin, HIGH);
+          digitalWrite(relaisPin, LOW);
           isMilling = false;
       }
       
@@ -252,6 +252,7 @@ void loop() {
       raiseTime((int)stateBtn);
       delay(250);
     }
+    
     updateState();
     delay(75);
   }
