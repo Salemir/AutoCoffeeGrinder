@@ -1,4 +1,4 @@
-Projekt auf https://wokwi.com/projects/395717993430856705
+Projekt auf https://wokwi.com/projects/396241824997552129
 
 Ideengeber: https://www.flomei.de/blog/2021/01/07/kaffeemuehle-automatisieren/
 Code Ideengeber: https://gitlab.com/www-flomei-de/coffeegrinder/-/blob/master/code/CoffeeGrinder/CoffeeGrinder.ino?ref_type=heads
@@ -9,8 +9,9 @@ In Arduino IDE 2 Nano mit "Old Bootloader" wählen (Tools -> Prozessor -> ATMega
 
 Teileliste:
 - Arduino: https://www.roboter-bausatz.de/p/nano-mega328p-v3.0-usb-ch340g-board
-- Relais: https://www.roboter-bausatz.de/p/1-kanal-relais-5v-230v
-- RGB-Led: https://www.roboter-bausatz.de/p/10mm-rgb-led-gemeinsame-kathode
+- Relais
+- Leds
+- Strombegrenzer
 - Lochrasterplatine:
 - - Einseitig: https://www.roboter-bausatz.de/p/lochrasterplatine-einseitig-universal-5-7cm-2.54mm
 - - Zweiseitig: https://www.roboter-bausatz.de/p/doppelseitige-lochrasterplatine-3-x-7-cm
