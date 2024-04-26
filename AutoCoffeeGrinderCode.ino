@@ -27,8 +27,8 @@ void setup() {
   timeState2 = (readIntFromEEPROM(2) * 20);
 
   // if there's a problem with the EEPROM, fall back to somewhat plausible values
-  if(timeState1 < 0) { timeState1 = 4000; }
-  if(timeState2 < 0) { timeState2 = 8000; }
+  if(timeState1 < 0) { timeState1 = 3600; }
+  if(timeState2 < 0) { timeState2 = 7400; }
 
   // update LEDs + display to reflect current state
   updateState();
