@@ -3,6 +3,9 @@ Projekt auf https://wokwi.com/projects/396241824997552129
 V2 auf https://wokwi.com/projects/441331500131183617
 (Buttons von Pulldown auf Pullup & Software-Absicherung einer Endlosschleife)
 
+V3 auf https://wokwi.com/projects/471856747304496129
+(weitere Stabilitäts-Systeme eingebaut)
+
 Ideengeber: https://www.flomei.de/blog/2021/01/07/kaffeemuehle-automatisieren/
 Code Ideengeber: https://gitlab.com/www-flomei-de/coffeegrinder/-/blob/master/code/CoffeeGrinder/CoffeeGrinder.ino?ref_type=heads
 
