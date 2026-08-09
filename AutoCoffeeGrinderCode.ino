@@ -1,76 +1,80 @@
 #include <EEPROM.h>
 
-int ledState1 = 2;
-int ledState2 = 4;
-int relaisPin = 12;
-int changeStateBtn = 10;
-int startMillBtn = 9;
-int lowerTimeBtn = 8;
-int raiseTimeBtn = 6;
+// ---- Pins ----
+const int ledState1     = 2;
+const int ledState2     = 4;
+const int relaisPin     = 12;
+const int changeStateBtn = 10;
+const int startMillBtn  = 9;
+const int lowerTimeBtn  = 8;
+const int raiseTimeBtn  = 6;
 
+// ---- Konstanten ----
+const int STEP_MS          = 200;   // Schrittweite beim Verstellen
+const int MIN_DURATION_MS  = 200;   // Untergrenze -> verhindert negative/0 Laufzeiten
+const int MAX_DURATION_MS  = 30000; // Obergrenze -> plausibler Max-Wert (30s)
+const unsigned long ABSOLUTE_MAX_RUNTIME = 30000UL; // Failsafe, UNABHÄNGIG von duration
+const unsigned long DEBOUNCE_MS = 300; // groesser = "traeger", aber Mehrfachtrigger pro Klick werden verhindert
+
+// ---- Zustand ----
 int stateBtn = 0;
-int duration = 100;
+long timeState1 = 0;
+long timeState2 = 0;
 bool isMilling = false;
 
-int timeState1 = 0;
-int timeState2 = 0;
+// Entprellung pro Taster
+unsigned long lastDebounce_changeState = 0;
+unsigned long lastDebounce_lowerTime   = 0;
+unsigned long lastDebounce_raiseTime   = 0;
 
 void setup() {
   setupPins();
   Serial.begin(9600);
 
-  // initialize state, this will be used for timing later
   stateBtn = 2;
-  
-  // read timer values from EEPROM
-  timeState1 = (readIntFromEEPROM(0) * 20);
-  timeState2 = (readIntFromEEPROM(2) * 20);
 
-  // if there's a problem with the EEPROM, fall back to somewhat plausible values
-  if(timeState1 < 0) { timeState1 = 3600; }
-  if(timeState2 < 0) { timeState2 = 7400; }
+  timeState1 = (long)readIntFromEEPROM(0) * 20;
+  timeState2 = (long)readIntFromEEPROM(2) * 20;
 
-  // update LEDs + display to reflect current state
+  if (timeState1 <= 0) { timeState1 = 4000; }
+  if (timeState2 <= 0) { timeState2 = 8000; }
+  timeState1 = clampDuration(timeState1);
+  timeState2 = clampDuration(timeState2);
+
   updateState();
 
-  Serial.println("######################################");
-  Serial.println("Machine started.");
-  Serial.println("Available modes:");
-  Serial.println("0 - manual");
-  Serial.println("1 - single shot (timeState1)");
-  Serial.println("2 - double shot (timeState2)");
-  Serial.print("Machine mode is now (by default): ");
-  Serial.println((int) stateBtn);
-  Serial.println("Saved timeState values are:");
-  Serial.print("timeState1: ");
+  Serial.println(F("######################################"));
+  Serial.println(F("Machine started."));
+  Serial.println(F("Available modes:"));
+  Serial.println(F("0 - manual"));
+  Serial.println(F("1 - single shot (timeState1)"));
+  Serial.println(F("2 - double shot (timeState2)"));
+  Serial.print(F("Machine mode is now (by default): "));
+  Serial.println(stateBtn);
+  Serial.println(F("Saved timeState values are:"));
+  Serial.print(F("timeState1: "));
   Serial.println(timeState1);
-  Serial.print("timeState2: ");
+  Serial.print(F("timeState2: "));
   Serial.println(timeState2);
-  Serial.println("######################################");
+  Serial.println(F("######################################"));
 }
-
-
 
 void setupPins() {
   pinMode(ledState1, OUTPUT);
   pinMode(ledState2, OUTPUT);
   pinMode(relaisPin, OUTPUT);
 
-  pinMode(changeStateBtn, INPUT);
-  pinMode(startMillBtn, INPUT);
-  pinMode(lowerTimeBtn, INPUT);
-  pinMode(raiseTimeBtn, INPUT);
+  // INPUT_PULLUP statt manuellem digitalWrite(HIGH) nach pinMode(INPUT)
+  pinMode(changeStateBtn, INPUT_PULLUP);
+  pinMode(startMillBtn, INPUT_PULLUP);
+  pinMode(lowerTimeBtn, INPUT_PULLUP);
+  pinMode(raiseTimeBtn, INPUT_PULLUP);
 
   digitalWrite(relaisPin, LOW);
-  digitalWrite(changeStateBtn, LOW);
-  digitalWrite(startMillBtn, LOW);
-  digitalWrite(lowerTimeBtn, LOW);
-  digitalWrite(raiseTimeBtn, LOW);
 }
 
-
 void updateLED() {
-  if(stateBtn == 0) {
+  if (stateBtn == 0) {
     digitalWrite(ledState1, LOW);
     digitalWrite(ledState2, LOW);
   } else if (stateBtn == 1) {
@@ -83,178 +87,179 @@ void updateLED() {
 }
 
 void updateState() {
-    updateLED();
+  updateLED();
+}
+
+// Sorgt dafür, dass die Laufzeit NIE negativ oder unplausibel groß werden kann.
+// Das ist der zentrale Fix für die Hänger.
+long clampDuration(long value) {
+  if (value < MIN_DURATION_MS) return MIN_DURATION_MS;
+  if (value > MAX_DURATION_MS) return MAX_DURATION_MS;
+  return value;
 }
 
 void lowerTime(int state) {
-  if(state == 1) {
-    Serial.println("Lowered time for mode 1");
-    timeState1 -= 200; 
-    Serial.print("New time for mode 1 is: ");
+  if (state == 1) {
+    timeState1 = clampDuration(timeState1 - STEP_MS);
+    Serial.print(F("Lowered time for mode 1. New time: "));
     Serial.println(timeState1);
     saveDataToEEPROM(state);
-  }
-  else if(state == 2) {
-    Serial.println("Lowered time for mode 2");
-    timeState2 -= 200; 
-    Serial.print("New time for mode 2 is: ");
+  } else if (state == 2) {
+    timeState2 = clampDuration(timeState2 - STEP_MS);
+    Serial.print(F("Lowered time for mode 2. New time: "));
     Serial.println(timeState2);
     saveDataToEEPROM(state);
   }
-
-  
 }
 
 void raiseTime(int state) {
-  if(state == 1) {
-    Serial.println("Raised time for mode 1");
-    timeState1 += 200; 
-    Serial.print("New time for mode 1 is: ");
+  if (state == 1) {
+    timeState1 = clampDuration(timeState1 + STEP_MS);
+    Serial.print(F("Raised time for mode 1. New time: "));
     Serial.println(timeState1);
     saveDataToEEPROM(state);
-  }
-  else if(state == 2) {
-    Serial.println("Raised time for mode 2");
-    timeState2 += 200; 
-    Serial.print("New time for mode 2 is: ");
+  } else if (state == 2) {
+    timeState2 = clampDuration(timeState2 + STEP_MS);
+    Serial.print(F("Raised time for mode 2. New time: "));
     Serial.println(timeState2);
     saveDataToEEPROM(state);
   }
-
 }
 
 void saveDataToEEPROM(int state) {
-  // times are set as multiples of 200
-  // therefore in one byte we can save up to 20480 ms runtime
-  // addr 0 for timestate 1, 2 for timestate 2
-  if(state == 1) {
-    int val = timeState1/20;
-    Serial.print("Saving timeState 1 as: ");
-    Serial.println(val);
+  if (state == 1) {
+    int val = timeState1 / 20;
     writeIntIntoEEPROM(0, val);
-  } else if(state == 2) {
-    int val = timeState2/20;
-    Serial.print("Saving timeState 2 as: ");
-    Serial.println(val);
+  } else if (state == 2) {
+    int val = timeState2 / 20;
     writeIntIntoEEPROM(2, val);
   }
 }
 
-void writeIntIntoEEPROM(int address, int number)
-{ 
+void writeIntIntoEEPROM(int address, int number) {
   byte byte1 = number >> 8;
   byte byte2 = number & 0xFF;
   EEPROM.write(address, byte1);
   EEPROM.write(address + 1, byte2);
 }
 
-int readIntFromEEPROM(int address)
-{
+int readIntFromEEPROM(int address) {
   byte byte1 = EEPROM.read(address);
   byte byte2 = EEPROM.read(address + 1);
   return (byte1 << 8) + byte2;
 }
 
+// Führt den Mahlvorgang für eine feste Dauer aus.
+// duration ist durch clampDuration() garantiert positiv & begrenzt,
+// zusätzlich gibt es einen fixen, von duration unabhängigen Failsafe.
+void runTimedMilling(unsigned long duration) {
+  Serial.print(F("Starting milling, duration: "));
+  Serial.println(duration);
 
+  unsigned long start = millis();
+  unsigned long lastPrint = start;
+  bool timeout = false;
+
+  digitalWrite(relaisPin, HIGH);
+  isMilling = true;
+
+  while (millis() - start < duration) {
+    unsigned long elapsedTotal = millis() - start;
+
+    // Fixer Failsafe, unabhängig vom (bereits geclampten) duration-Wert
+    if (elapsedTotal > ABSOLUTE_MAX_RUNTIME) {
+      Serial.println(F("SAFETY STOP: absolute max runtime reached!"));
+      timeout = true;
+      break;
+    }
+
+    // Countdown max. 1x pro Sekunde ausgeben (statt Serial-Flut)
+    if (millis() - lastPrint >= 1000) {
+      lastPrint = millis();
+      long remaining = (long)duration - (long)elapsedTotal;
+      Serial.println(remaining);
+    }
+  }
+
+  digitalWrite(relaisPin, LOW);
+  isMilling = false;
+
+  if (timeout) {
+    Serial.println(F("Milling stopped by safety timeout."));
+  } else {
+    Serial.println(F("Milling done. Stopping."));
+  }
+  delay(300);
+}
+
+void runManualMilling() {
+  Serial.println(F("Starting manual milling..."));
+  unsigned long start = millis();
+  digitalWrite(relaisPin, HIGH);
+  isMilling = true;
+
+  while (digitalRead(startMillBtn) == LOW) {
+    // Auch im manuellen Modus nicht grenzenlos laufen lassen
+    if (millis() - start > ABSOLUTE_MAX_RUNTIME) {
+      Serial.println(F("SAFETY STOP: manual mode max runtime reached!"));
+      break;
+    }
+    delay(5);
+  }
+
+  digitalWrite(relaisPin, LOW);
+  isMilling = false;
+  Serial.println(F("Milling done. Stopping."));
+}
 
 void loop() {
-
   int startRead = digitalRead(startMillBtn);
-  if(startRead == 1) {
-    // start milling
-    if(isMilling == false) {
-      isMilling = true;
-      Serial.print("Machine mode is: ");
-      Serial.println((int)stateBtn);
-      
-      unsigned long start = millis();
-      if(stateBtn == 1) {
-        duration = timeState1;
-      }
-      else if(stateBtn == 2) {
-        duration = timeState2;
-      }
 
-      if(stateBtn == 1 || stateBtn ==2) {
-        Serial.print("Duration is: ");
-        Serial.println((int)duration);
+  if (startRead == LOW) {
+    if (!isMilling) {
+      Serial.print(F("Machine mode is: "));
+      Serial.println(stateBtn);
 
-        Serial.println("Starting milling...");
-        int elapse = 0;
-        // run for a specified time, keep the motor running
-        while(millis() < start + duration) {
-          digitalWrite(relaisPin, HIGH);
-          isMilling = true;
-        
-          // show countdown in automatic mode
-          if(stateBtn > 0) {            
-              if (stateBtn == 1) {
-                elapse = (timeState1 - (millis()-start));
-                Serial.println(elapse);
-              }
-              else if (stateBtn == 2) {
-                elapse = (timeState2 - (millis()-start));
-                Serial.println(elapse);
-              }
-          }
-         
-        }
-        // time is over, reset machine automatic mode
-        Serial.println("Milling done. Stopping.");
-        digitalWrite(relaisPin, LOW);
-        isMilling = false;
-        delay(1000);
-
+      if (stateBtn == 1) {
+        runTimedMilling((unsigned long)timeState1);
+      } else if (stateBtn == 2) {
+        runTimedMilling((unsigned long)timeState2);
+      } else if (stateBtn == 0) {
+        runManualMilling();
       }
-      else if(stateBtn == 0) {
-        while (startRead == 1) {
-          digitalWrite(relaisPin, HIGH);
-          isMilling = true;
-          delay(5);
-          startRead = digitalRead(startMillBtn);
-        }
-        // time is over, reset machine manual mode
-          Serial.println("Milling done. Stopping.");
-          digitalWrite(relaisPin, LOW);
-          isMilling = false;
-      }
-      
-    } else if (isMilling == true) {
-      Serial.println("Milling already in progress...");
+    } else {
+      // Sollte praktisch nie erreicht werden, da runTimedMilling/runManualMilling blockieren
+      Serial.println(F("Milling already in progress..."));
       delay(200);
     }
-    
-  } else if (startRead == 0 && isMilling == false) {
-    // allow changes only when not milling
+  } else if (!isMilling) {
+    // Änderungen nur erlauben, wenn gerade nicht gemahlen wird
+    unsigned long now = millis();
 
-    // switch modes if button was pressed
-    int stateRead = digitalRead(changeStateBtn);  
-    if(stateRead == 1) {
+    if (digitalRead(changeStateBtn) == LOW &&
+        (now - lastDebounce_changeState) > DEBOUNCE_MS) {
+      lastDebounce_changeState = now;
       switch (stateBtn) {
         case 0: stateBtn = 1; break;
         case 1: stateBtn = 2; break;
         case 2: stateBtn = 0; break;
       }
-      Serial.print("Machine mode changed. Is now: ");
-      delay(200);
-      Serial.println((int)stateBtn);
+      Serial.print(F("Machine mode changed. Is now: "));
+      Serial.println(stateBtn);
     }
 
-    // switch modes if button was pressed
-    int lowerTimeRead = digitalRead(lowerTimeBtn);  
-    if(lowerTimeRead == HIGH) {
-      lowerTime((int)stateBtn);
-      delay(250);
+    if (digitalRead(lowerTimeBtn) == LOW &&
+        (now - lastDebounce_lowerTime) > DEBOUNCE_MS) {
+      lastDebounce_lowerTime = now;
+      lowerTime(stateBtn);
     }
 
-    int raiseTimeRead = digitalRead(raiseTimeBtn);  
-    if(raiseTimeRead == HIGH) {
-      raiseTime((int)stateBtn);
-      delay(250);
+    if (digitalRead(raiseTimeBtn) == LOW &&
+        (now - lastDebounce_raiseTime) > DEBOUNCE_MS) {
+      lastDebounce_raiseTime = now;
+      raiseTime(stateBtn);
     }
-    
+
     updateState();
-    delay(75);
   }
-  
 }
